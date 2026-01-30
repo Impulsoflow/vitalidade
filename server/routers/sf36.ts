@@ -32,6 +32,140 @@ const SF36ResultsSchema = z.object({
   mcs: z.number(),
 });
 
+async function sendEmail(
+  to: string,
+  subject: string,
+  html: string
+): Promise<void> {
+  // Usar a API Forge para enviar email
+  const forgeApiUrl = process.env.BUILT_IN_FORGE_API_URL;
+  const forgeApiKey = process.env.BUILT_IN_FORGE_API_KEY;
+
+  if (!forgeApiUrl || !forgeApiKey) {
+    console.warn("Email service not configured");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${forgeApiUrl}/email/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${forgeApiKey}`,
+      },
+      body: JSON.stringify({
+        to,
+        subject,
+        html,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`Email send failed: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+}
+
+function generateEmailHtml(
+  respondent: z.infer<typeof RespondentDataSchema>,
+  results: z.infer<typeof SF36ResultsSchema>
+): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 5px; }
+    .content { background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 5px; }
+    .score-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+    .score-value { font-weight: bold; color: #2d5016; }
+    .footer { text-align: center; font-size: 12px; color: #666; margin-top: 30px; }
+    h2 { color: #2d5016; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Índice de Vitalidade</h1>
+      <p>Avaliação da saúde física/mental</p>
+    </div>
+
+    <div class="content">
+      <p>Olá <strong>${respondent.fullName}</strong>,</p>
+      <p>Obrigado por completar o Índice de Vitalidade. Abaixo estão seus resultados:</p>
+
+      <h2>Componentes Resumidos</h2>
+      <div class="score-item">
+        <span>Componente Físico (PCS)</span>
+        <span class="score-value">${Math.round(results.pcs)}/100</span>
+      </div>
+      <div class="score-item">
+        <span>Componente Mental (MCS)</span>
+        <span class="score-value">${Math.round(results.mcs)}/100</span>
+      </div>
+
+      <h2>Escores por Domínio</h2>
+      <div class="score-item">
+        <span>Funcionamento Físico</span>
+        <span class="score-value">${Math.round(results.scores.physicalFunctioning)}</span>
+      </div>
+      <div class="score-item">
+        <span>Limitações por Problemas Físicos</span>
+        <span class="score-value">${Math.round(results.scores.rolePhysical)}</span>
+      </div>
+      <div class="score-item">
+        <span>Limitações por Problemas Emocionais</span>
+        <span class="score-value">${Math.round(results.scores.roleEmotional)}</span>
+      </div>
+      <div class="score-item">
+        <span>Dor Corporal</span>
+        <span class="score-value">${Math.round(results.scores.pain)}</span>
+      </div>
+      <div class="score-item">
+        <span>Saúde Geral</span>
+        <span class="score-value">${Math.round(results.scores.generalHealth)}</span>
+      </div>
+      <div class="score-item">
+        <span>Energia/Fadiga</span>
+        <span class="score-value">${Math.round(results.scores.energyFatigue)}</span>
+      </div>
+      <div class="score-item">
+        <span>Bem-estar Emocional</span>
+        <span class="score-value">${Math.round(results.scores.emotionalWellbeing)}</span>
+      </div>
+      <div class="score-item">
+        <span>Funcionamento Social</span>
+        <span class="score-value">${Math.round(results.scores.socialFunctioning)}</span>
+      </div>
+
+      <h2>Como Interpretar</h2>
+      <ul>
+        <li><strong>75-100:</strong> Saúde excelente neste domínio</li>
+        <li><strong>50-74:</strong> Saúde boa, sem limitações significativas</li>
+        <li><strong>25-49:</strong> Saúde regular, algumas limitações presentes</li>
+        <li><strong>0-24:</strong> Saúde crítica, limitações significativas</li>
+      </ul>
+
+      <p style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin-top: 20px;">
+        <strong>Importante:</strong> Este questionário é uma ferramenta de autoavaliação. Os resultados não substituem uma avaliação médica profissional. Consulte um profissional de saúde para interpretação clínica adequada.
+      </p>
+    </div>
+
+    <div class="footer">
+      <p><strong>Impulso Coaching</strong></p>
+      <p>"a mudança pode acontecer em um instante"</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
 export const sf36Router = router({
   submitResults: publicProcedure
     .input(
@@ -44,15 +178,28 @@ export const sf36Router = router({
       const { respondent, results } = input;
 
       try {
-        // Enviar email para impulsoflow@gmail.com
-        const emailContent = generateEmailContent(respondent, results);
+        // Gerar conteúdo do email em HTML
+        const emailHtml = generateEmailHtml(respondent, results);
 
-        // Aqui você pode integrar com um serviço de email
-        // Por enquanto, vamos notificar o owner
+        // Enviar email para o respondente
+        await sendEmail(
+          respondent.email,
+          "Seus Resultados - Índice de Vitalidade",
+          emailHtml
+        );
+
+        // Enviar também para impulsoflow@gmail.com
+        await sendEmail(
+          "impulsoflow@gmail.com",
+          `Novo Resultado SF-36 - ${respondent.fullName}`,
+          emailHtml
+        );
+
+        // Notificar o owner sobre a submissão
         await notifyOwner({
-          title: `SF-36 Resultado Submetido - ${respondent.fullName}`,
+          title: `Novo Resultado SF-36 - ${respondent.fullName}`,
           content: `
-Novo resultado de SF-36 recebido:
+Novo resultado de Índice de Vitalidade recebido:
 
 **Respondente:** ${respondent.fullName}
 **Profissão:** ${respondent.profession}
@@ -84,44 +231,3 @@ Escores por Domínio:
       }
     }),
 });
-
-function generateEmailContent(
-  respondent: z.infer<typeof RespondentDataSchema>,
-  results: z.infer<typeof SF36ResultsSchema>
-): string {
-  return `
-Olá ${respondent.fullName},
-
-Obrigado por completar o questionário SF-36 (Versão Brasileira) de Qualidade de Vida.
-
-Seus Resultados:
-================
-
-Componentes Resumidos:
-- Componente Físico (PCS): ${Math.round(results.pcs)}/100
-- Componente Mental (MCS): ${Math.round(results.mcs)}/100
-
-Escores por Domínio (0-100):
-- Funcionamento Físico: ${Math.round(results.scores.physicalFunctioning)}
-- Limitações por Problemas Físicos: ${Math.round(results.scores.rolePhysical)}
-- Limitações por Problemas Emocionais: ${Math.round(results.scores.roleEmotional)}
-- Dor Corporal: ${Math.round(results.scores.pain)}
-- Saúde Geral: ${Math.round(results.scores.generalHealth)}
-- Energia/Fadiga: ${Math.round(results.scores.energyFatigue)}
-- Bem-estar Emocional: ${Math.round(results.scores.emotionalWellbeing)}
-- Funcionamento Social: ${Math.round(results.scores.socialFunctioning)}
-
-Interpretação:
-- 75-100: Saúde excelente neste domínio
-- 50-74: Saúde boa, sem limitações significativas
-- 25-49: Saúde regular, algumas limitações presentes
-- 0-24: Saúde crítica, limitações significativas
-
-Importante:
-Este questionário é uma ferramenta de autoavaliação. Os resultados não substituem uma avaliação médica profissional. Consulte um profissional de saúde para interpretação clínica adequada.
-
----
-Impulso Coaching
-"a mudança pode acontecer em um instante"
-  `;
-}

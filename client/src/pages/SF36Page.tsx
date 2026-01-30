@@ -156,8 +156,8 @@ export default function SF36Page() {
           )}
 
           {/* Progress Section */}
-          <Card className="p-6 mb-8 bg-primary/5 border-primary/20">
-            <div className="space-y-3">
+          <Card className="p-4 md:p-6 mb-4 md:mb-8 bg-primary/5 border-primary/20">
+            <div className="space-y-2 md:space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-foreground">
                   Progresso do Questionário
@@ -175,11 +175,11 @@ export default function SF36Page() {
 
           {/* Instructions */}
           {currentQuestionIndex === 0 && answeredCount === 0 && (
-            <Card className="p-6 mb-8 bg-blue-50 border-blue-200">
-              <h2 className="text-lg font-semibold text-foreground mb-3">
+            <Card className="p-4 md:p-6 mb-4 md:mb-8 bg-blue-50 border-blue-200">
+              <h2 className="text-base md:text-lg font-semibold text-foreground mb-2 md:mb-3">
                 Instruções Importantes
               </h2>
-              <ul className="space-y-2 text-sm text-foreground">
+              <ul className="space-y-1 md:space-y-2 text-xs md:text-sm text-foreground">
                 <li className="flex items-start gap-3">
                   <span className="text-primary font-bold">•</span>
                   <span>
@@ -205,9 +205,9 @@ export default function SF36Page() {
           )}
 
           {/* Current Question */}
-          <Card className="p-6 mb-8">
-            <div className="mb-6 pb-6 border-b border-border">
-              <div className="flex items-center justify-between mb-3">
+          <Card className="p-4 md:p-6 mb-4 md:mb-8">
+            <div className="mb-3 md:mb-6 pb-3 md:pb-6 border-b border-border">
+              <div className="flex items-center justify-between mb-2 md:mb-3">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   Pergunta {currentQuestionIndex + 1} de {totalQuestions}
                 </span>
@@ -232,7 +232,7 @@ export default function SF36Page() {
           </Card>
 
           {/* Navigation */}
-          <div className="flex gap-3 justify-between mb-8">
+          <div className="flex gap-2 md:gap-3 justify-between mb-4 md:mb-8">
             <Button
               onClick={handlePrevious}
               disabled={currentQuestionIndex === 0}
@@ -267,7 +267,7 @@ export default function SF36Page() {
           </div>
 
           {/* Status Bar */}
-          <div className="text-center text-xs text-muted-foreground">
+          <div className="text-center text-xs text-muted-foreground mt-2 md:mt-4">
             {answeredCount === totalQuestions ? (
               <p className="text-green-600 font-medium">
                 ✓ Todas as perguntas foram respondidas. Clique em "Calcular
