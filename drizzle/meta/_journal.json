@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1769781174924,
+      "tag": "0000_last_cammi",
+      "breakpoints": true
+    }
+  ]
+}

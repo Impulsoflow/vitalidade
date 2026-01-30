@@ -8,9 +8,12 @@
 
 import { SF36Results as SF36ResultsType, SCALE_NAMES } from "@/lib/sf36-data";
 import { Card } from "@/components/ui/card";
+import { RespondentData } from "@/lib/respondent";
+import { ResultsPDF } from "./ResultsPDF";
 
 interface SF36ResultsProps {
   results: SF36ResultsType;
+  respondent?: RespondentData | null;
 }
 
 function getScoreColor(score: number): string {
@@ -54,7 +57,7 @@ function ScoreBar({ score, label }: { score: number; label: string }) {
   );
 }
 
-export function SF36Results({ results }: SF36ResultsProps) {
+export function SF36Results({ results, respondent }: SF36ResultsProps) {
   const { scores, pcs, mcs } = results;
 
   return (
@@ -173,6 +176,16 @@ export function SF36Results({ results }: SF36ResultsProps) {
           clínica adequada.
         </p>
       </div>
+
+      {/* PDF and Email Actions */}
+      {respondent && (
+        <Card className="p-6 bg-primary/5 border-primary/20">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            Compartilhar Resultados
+          </h3>
+          <ResultsPDF respondent={respondent} results={results} />
+        </Card>
+      )}
     </div>
   );
 }
