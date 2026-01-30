@@ -100,10 +100,10 @@ export default function SF36Page() {
           {/* Subtitle */}
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-foreground mb-2">
-              SF-36 - Qualidade de Vida
+              Índice de Vitalidade
             </h2>
             <p className="text-sm text-muted-foreground">
-              Versão Brasileira - Avalie sua saúde relacionada à qualidade de vida
+              Avaliação da saúde física/mental
             </p>
           </div>
 
@@ -133,6 +133,16 @@ export default function SF36Page() {
             </h1>
             <p className="text-xs text-muted-foreground italic">
               a mudança pode acontecer em um instante
+            </p>
+          </div>
+
+          {/* Title */}
+          <div className="mb-6 text-center">
+            <h2 className="text-2xl font-bold text-foreground mb-1">
+              Índice de Vitalidade
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Avaliação da saúde física/mental
             </p>
           </div>
 
@@ -288,6 +298,16 @@ export default function SF36Page() {
             </h1>
             <p className="text-xs text-muted-foreground italic">
               a mudança pode acontecer em um instante
+            </p>
+          </div>
+
+          {/* Title */}
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-1">
+              Índice de Vitalidade
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Avaliação da saúde física/mental
             </p>
           </div>
 
